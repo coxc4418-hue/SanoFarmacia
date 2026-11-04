@@ -1,0 +1,9 @@
+{
+  "name": "sano-farmacia-scripts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "firebase": "^10.14.1",
+    "puppeteer-core": "^23.11.1"
+  }
+}

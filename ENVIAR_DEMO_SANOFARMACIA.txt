@@ -1,0 +1,14 @@
+💊 *SanoFarmacia* — el sistema para tu farmacia
+
+Vende por caja, blíster o unidad con el lector de código de barras, controla tus lotes y vencimientos (sale primero lo que vence antes), lleva el libro de recetas y de controlados, la ficha de cada paciente con sus alergias y tratamientos, avísale por WhatsApp cuando se le acaba su medicina, maneja convenios y seguros, recibe pedidos en línea con delivery, compra a tus droguerías con el pedido sugerido y controla tu caja y tu ganancia. Cobras en la moneda de tu país (y en dos monedas si lo necesitas).
+
+▶️ Mira cómo funciona (video tutorial):
+https://sano-farmacia.web.app/tutorial/sano-farmacia-tutorial.mp4
+
+🧪 Pruébalo gratis 30 minutos, sin registrarte:
+https://sano-farmacia.web.app
+Toca "Probar demo gratis" (PIN de la demo: 1234).
+
+📲 Se instala como app en el teléfono, la tablet o la computadora, sin tiendas ni descargas.
+
+¿Te interesa? Escríbenos por WhatsApp: +58 422-190 6045

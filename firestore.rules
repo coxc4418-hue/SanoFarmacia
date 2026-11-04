@@ -1,0 +1,164 @@
+rules_version = '2';
+
+// SanoFarmacia — Reglas de seguridad multisede
+// - Cada sede (cuenta) solo accede a sus propios datos en tenants/{uid}.
+// - El administrador general crea, congela, renueva y elimina sedes.
+// - Una sede congelada o con el plan vencido no puede leer ni escribir sus datos.
+// - Las demos (sesión anónima) caducan a los 30 minutos: después solo pueden borrar sus datos.
+// - cards/{código}: tarjeta digital pública del paciente (nombre corto, puntos, tratamientos y su recompra); se lee por código exacto, sin listar.
+// - shops/{slug}: catálogo público de la farmacia (productos, precio y disponibilidad; nunca costos ni pacientes); se lee por slug exacto.
+// - orders/{id}: pedidos en línea; cualquiera puede crearlos (validados), solo la farmacia dueña los ve, cambia su estado y los borra.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return signedIn()
+        && request.auth.token.email == 'admin@sanofarmacia.app'
+        && request.auth.token.firebase.sign_in_provider == 'password';
+    }
+
+    function isAnon() {
+      return signedIn() && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    function isOwner(tenantId) {
+      return signedIn() && request.auth.uid == tenantId;
+    }
+
+    function tenantData(tenantId) {
+      return get(/databases/$(database)/documents/tenants/$(tenantId)).data;
+    }
+
+    // Activa = no congelada, no eliminada y con el plan vigente (si tiene fecha de vencimiento)
+    function tenantActive(tenantId) {
+      let t = tenantData(tenantId);
+      let paid = t.get('paidUntil', null);
+      return t.get('active', true) == true
+        && t.get('deleted', false) != true
+        && (paid == null || paid > request.time);
+    }
+
+    // Una demo solo puede crear/modificar datos mientras no haya vencido
+    function demoValid(tenantId) {
+      let t = tenantData(tenantId);
+      return t.get('demo', false) != true || t.expiresAt > request.time;
+    }
+
+    function ownerCanWrite() {
+      return signedIn() && tenantActive(request.auth.uid) && demoValid(request.auth.uid);
+    }
+
+    // Usuario → correo (para iniciar sesión con el nombre de usuario)
+    match /usernames/{username} {
+      allow get: if true;
+      allow list: if false;
+      allow write: if isSuperAdmin();
+    }
+
+    // Avisos generales del administrador para todas las sedes
+    match /system/{docId} {
+      allow read: if signedIn();
+      allow write: if isSuperAdmin();
+    }
+
+    // Tarjeta digital pública del paciente
+    match /cards/{code} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if isSuperAdmin()
+        || (signedIn() && request.resource.data.tenantId == request.auth.uid && ownerCanWrite());
+      allow update: if isSuperAdmin()
+        || (signedIn() && resource.data.tenantId == request.auth.uid
+            && request.resource.data.tenantId == request.auth.uid && ownerCanWrite());
+      allow delete: if isSuperAdmin() || (signedIn() && resource.data.tenantId == request.auth.uid);
+    }
+
+    // Catálogo público de pedidos de cada farmacia
+    match /shops/{slug} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if isSuperAdmin()
+        || (signedIn() && slug.matches('^[a-z0-9-]{4,60}$')
+            && request.resource.data.tenantId == request.auth.uid && ownerCanWrite());
+      allow update: if isSuperAdmin()
+        || (signedIn() && resource.data.tenantId == request.auth.uid
+            && request.resource.data.tenantId == request.auth.uid && ownerCanWrite());
+      allow delete: if isSuperAdmin() || (signedIn() && resource.data.tenantId == request.auth.uid);
+    }
+
+    // Pedidos en línea (creados desde el catálogo público)
+    function validOrder(d) {
+      return d.keys().hasOnly(['tenantId', 'slug', 'number', 'name', 'phone', 'address', 'mode', 'deliveryFee', 'note', 'payMethod', 'items', 'total', 'hasRx', 'status', 'createdAt'])
+        && d.keys().hasAll(['tenantId', 'slug', 'number', 'name', 'phone', 'mode', 'items', 'total', 'status', 'createdAt'])
+        && d.tenantId is string && d.tenantId.size() > 0 && d.tenantId.size() <= 128
+        && d.slug is string && d.slug.size() <= 60
+        && d.number is string && d.number.size() <= 16
+        && d.name is string && d.name.size() >= 2 && d.name.size() <= 60
+        && d.phone is string && d.phone.size() >= 7 && d.phone.size() <= 20
+        && d.get('address', '') is string && d.get('address', '').size() <= 200
+        && d.mode in ['retiro', 'delivery']
+        && d.get('deliveryFee', 0) is number && d.get('deliveryFee', 0) >= 0 && d.get('deliveryFee', 0) <= 1000000
+        && d.get('note', '') is string && d.get('note', '').size() <= 300
+        && d.get('payMethod', '') is string && d.get('payMethod', '').size() <= 40
+        && d.items is list && d.items.size() >= 1 && d.items.size() <= 40
+        && d.total is number && d.total >= 0 && d.total <= 100000000
+        && d.get('hasRx', false) is bool
+        && d.status == 'nueva'
+        && d.createdAt is string && d.createdAt.size() <= 30;
+    }
+    function shopOpenFor(d) {
+      let path = /databases/$(database)/documents/shops/$(d.slug);
+      return d.slug.size() >= 4 && exists(path)
+        && get(path).data.tenantId == d.tenantId
+        && get(path).data.get('enabled', true) == true;
+    }
+    match /orders/{id} {
+      allow create: if validOrder(request.resource.data)
+        && (shopOpenFor(request.resource.data)
+            || (signedIn() && request.resource.data.tenantId == request.auth.uid && ownerCanWrite()));
+      allow get, list: if isSuperAdmin() || (signedIn() && resource.data.tenantId == request.auth.uid);
+      allow update: if isSuperAdmin()
+        || (signedIn() && resource.data.tenantId == request.auth.uid
+            && request.resource.data.tenantId == resource.data.tenantId
+            && request.resource.data.status in ['nueva', 'preparando', 'lista', 'entregada', 'cancelada']
+            && ownerCanWrite());
+      allow delete: if isSuperAdmin() || (signedIn() && resource.data.tenantId == request.auth.uid);
+    }
+
+    match /tenants/{tenantId} {
+      allow get: if isSuperAdmin() || isOwner(tenantId);
+      allow list: if isSuperAdmin();
+
+      // Las sedes las crea el administrador. Una sesión anónima solo puede crear su demo (máx. 31 min).
+      allow create: if isSuperAdmin()
+        || (isOwner(tenantId) && isAnon()
+            && request.resource.data.demo == true
+            && request.resource.data.active == true
+            && request.resource.data.ownerUid == request.auth.uid
+            && request.resource.data.expiresAt <= request.time + duration.value(31, 'm'));
+
+      // La sede solo puede cambiar su nombre visible; estado, plan y vencimiento los maneja el administrador.
+      allow update: if isSuperAdmin()
+        || (isOwner(tenantId) && tenantActive(tenantId)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'updatedAt']));
+
+      allow delete: if isSuperAdmin() || (isOwner(tenantId) && resource.data.get('demo', false) == true);
+
+      // Datos de la farmacia: pacientes, productos y lotes, ventas, recetas, compras, proveedores, caja...
+      match /{collection}/{docId} {
+        allow read: if isSuperAdmin() || (isOwner(tenantId) && tenantActive(tenantId));
+        allow delete: if isSuperAdmin() || (isOwner(tenantId) && (tenantActive(tenantId) || tenantData(tenantId).get('demo', false) == true));
+        allow create, update: if isSuperAdmin() || (isOwner(tenantId) && tenantActive(tenantId) && demoValid(tenantId));
+      }
+    }
+
+    // Cualquier otra ruta queda bloqueada.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

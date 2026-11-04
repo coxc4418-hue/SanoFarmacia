@@ -1,0 +1,88 @@
+{
+  "id": "/",
+  "name": "SanoFarmacia — Gestión profesional para farmacias",
+  "short_name": "SanoFarmacia",
+  "description": "Venta por caja, blíster o unidad, lotes y vencimientos, recetas y controlados, pacientes con tratamientos y recompras por WhatsApp, convenios, pedidos en línea, compras, caja y reportes para farmacias.",
+  "start_url": "/?source=app",
+  "scope": "/",
+  "display": "standalone",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "orientation": "any",
+  "background_color": "#04130f",
+  "theme_color": "#04211c",
+  "lang": "es",
+  "dir": "ltr",
+  "categories": [
+    "business",
+    "medical",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Vender",
+      "short_name": "Vender",
+      "url": "/#/vender",
+      "icons": [
+        {
+          "src": "/assets/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Pedidos en línea",
+      "short_name": "Pedidos",
+      "url": "/#/pedidos",
+      "icons": [
+        {
+          "src": "/assets/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Inventario y vencimientos",
+      "short_name": "Inventario",
+      "url": "/#/inventario",
+      "icons": [
+        {
+          "src": "/assets/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Consulta de precios",
+      "short_name": "Precios",
+      "url": "/#/precios",
+      "icons": [
+        {
+          "src": "/assets/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
