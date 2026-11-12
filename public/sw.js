@@ -1,5 +1,5 @@
 // SanoFarmacia — Service Worker (PWA, funcionamiento sin conexión)
-const VERSION = 'sanofarmacia-v1.0.0';
+const VERSION = 'sanofarmacia-v1.0.2';
 const SDK = 'https://www.gstatic.com/firebasejs/10.14.1/';
 const VIEWS = ['admin', 'card', 'cash', 'clients', 'dashboard', 'inventory', 'invoices', 'kiosk', 'loyalty', 'orders', 'pos', 'purchases', 'reports', 'rx', 'search', 'settings', 'shop'];
 const SHELL = [
