@@ -42,7 +42,7 @@ export function openCountryPicker({ force = false } = {}) {
     m.el.querySelector('[data-ok]').onclick = async (e) => {
       if (!picked) return;
       setBusy(e.currentTarget, true, 'Guardando…');
-      try { await store.setCountry(picked, cur); toast(`Listo: trabajarás en ${loc().curName} (${loc().sym})`); m.close(); }
+      try { await store.setCountry(picked, cur); await (await import('./bcv.js')).onCountryChanged().catch(() => {}); toast(`Listo: trabajarás en ${loc().curName} (${loc().sym})`); m.close(); }
       catch (ex) { m.el.querySelector('[data-err]').textContent = ex.message; setBusy(e.currentTarget, false); }
     };
     draw();

@@ -3,6 +3,7 @@ import { store, updateTenant, getShop } from '../store.js';
 import { requirePin, changePassword, authErrorMessage, session } from '../auth.js';
 import { esc, num, toast, parseNum, setBusy, toggleTheme, download, nowISO, round2, openModal, shortId, confirmDialog, emptyState, loc, flagImg, usd } from '../utils.js';
 import { icon } from '../icons.js';
+import { fxSectionHTML, bindFxSection } from '../bcv.js';
 import { openCountryPicker, salesWa, SALES_PHONE_FMT, qrDataURL } from '../shared.js';
 import { isStandalone, bindInstallButtons } from '../install.js';
 import { CATEGORIES } from '../pharma.js';
@@ -60,17 +61,7 @@ export function mount(el, { params = {} }) {
 
     if (sec === 'moneda') {
       const X = s().fx || {};
-      body.innerHTML = `<form class="card stack" id="f-fx">
-        <div class="card-title">${icon('dollar')} Segunda moneda (tasa de cambio)</div>
-        <p class="small muted" style="margin:0">Los precios se guardan en ${esc(loc().curName)} (${esc(loc().sym)}). Si cobras también en otra moneda (por ejemplo bolívares con precios en dólares), activa la segunda moneda: el total, el vuelto, el ticket y el catálogo en línea muestran el equivalente con la tasa del día.</p>
-        ${sw('enabled', X.enabled, 'Mostrar equivalente en otra moneda', 'Actualiza la tasa cada día.')}
-        <div class="form-grid">
-          <div class="field"><label>Símbolo</label><input class="input" name="sym" value="${esc(X.sym || 'Bs')}" maxlength="4"></div>
-          <div class="field"><label>Nombre</label><input class="input" name="name" value="${esc(X.name || 'Bolívares')}"></div>
-          <div class="field"><label>Tasa: 1 ${esc(loc().sym)} =</label><input class="input input-lg" name="rate" inputmode="decimal" value="${X.rate ? num(X.rate, 2) : ''}" placeholder="0,00"></div>
-        </div>
-        ${save()}
-      </form>
+      body.innerHTML = `${fxSectionHTML()}
       <form class="card stack mt-lg" id="f-pr">
         <div class="card-title">${icon('percent')} Precios fraccionados e impuesto</div>
         <div class="form-grid">
@@ -79,13 +70,7 @@ export function mount(el, { params = {} }) {
         </div>
         ${save()}
       </form>`;
-      $('#f-fx').onsubmit = async (e) => {
-        e.preventDefault(); const F = e.target.elements;
-        const rate = parseNum(F.rate.value);
-        if (F.enabled.checked && !(rate > 0)) { toast('Escribe la tasa de cambio', 'warning'); return; }
-        await store.saveSettings({ fx: { enabled: F.enabled.checked, sym: F.sym.value.trim() || 'Bs', name: F.name.value.trim(), rate, updatedAt: nowISO() } });
-        toast('Tasa actualizada');
-      };
+      bindFxSection(body, render);
       $('#f-pr').onsubmit = async (e) => { e.preventDefault(); const F = e.target.elements; await store.saveSettings({ fractionMarkup: parseNum(F.fractionMarkup.value), iva: parseNum(F.iva.value) }); toast('Guardado'); };
     }
 

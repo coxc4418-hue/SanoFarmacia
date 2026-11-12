@@ -2092,3 +2092,9 @@ button.style-card { display: flex; gap: 8px; align-items: center; cursor: pointe
 .mcard-top { flex-wrap: wrap; }
 .mcard-top > div { flex: 1 1 150px; min-width: 0; }
 .mcard-top > .mcard-badge { margin-left: auto; }
+
+/* Moneda y tasa BCV */
+.rate-fx { font-weight: 700; color: var(--text-bs, var(--brand)); margin-left: 2px; }
+.bcv-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-2); }
+.bcv-rate { font-size: 26px; font-weight: 800; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.bcv-rate small { font-size: 13px; font-weight: 600; color: var(--muted); }
