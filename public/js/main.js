@@ -148,7 +148,10 @@ function renderLogin() {
     m.el.querySelector('[data-f]').onsubmit = go; m.el.querySelector('[data-ok]').onclick = go;
   };
   bindInstallButtons(root());
-  setTimeout(() => $('#lg-user')?.focus(), 50);
+  // Cursor en el usuario solo en computadoras con mouse y sin aviso encima: en teléfonos
+  // abriría el teclado y taparía el aviso de la demo / el botón de contacto.
+  const desk = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
+  if (desk && !demoEndedNotice) setTimeout(() => $('#lg-user')?.focus(), 50);
   if (demoEndedNotice) showDemoEnded();
 }
 
