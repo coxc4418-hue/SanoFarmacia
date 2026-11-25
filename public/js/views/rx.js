@@ -30,10 +30,12 @@ export function mount(el) {
     return [startOfDay(addDays(new Date(), -d)).toISOString(), endOfDay(new Date()).toISOString()];
   }
   async function load() {
+    if (!el.isConnected) return;
     $('#rx-body').innerHTML = '<div class="empty"><div class="spinner"></div></div>';
     const [a, b] = bounds();
     try { data = (await store.listBetween('prescriptions', 'date', a, b)).sort((x, y) => (y.date || '').localeCompare(x.date || '')); }
     catch (e) { console.error(e); data = []; }
+    if (!el.isConnected) return;
     draw();
   }
   function rows() {
@@ -50,6 +52,7 @@ export function mount(el) {
   }
 
   function draw() {
+    if (!el.isConnected || !$('#rx-range')) return;
     el.querySelectorAll('[data-t]').forEach((b) => b.classList.toggle('on', b.dataset.t === tab));
     $('#rx-range').style.display = tab === 'existencias' ? 'none' : '';
     if (tab === 'existencias') return drawStock();

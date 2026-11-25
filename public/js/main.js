@@ -261,9 +261,12 @@ function startPublisher() {
   pubOff?.();
   import('./ops.js').then(({ publishShop, resetPublished }) => {
     resetPublished();
-    const run = debounce(() => publishShop().catch((e) => console.warn('[catálogo]', e?.code || e)), 4000);
-    publishShop().catch((e) => console.warn('[catálogo]', e?.code || e));
-    const offs = [store.on('products', run), store.on('settings', run)];
+    let didFirst = false;
+    const fire = () => publishShop().then((ok) => { if (ok) didFirst = true; }).catch((e) => console.warn('[catálogo]', e?.code || e));
+    const run = debounce(fire, 1200);
+    const onChange = () => { if (!didFirst) fire(); else run(); };
+    fire();
+    const offs = [store.on('products', onChange), store.on('settings', onChange)];
     const iv = setInterval(run, 10 * 60000);
     pubOff = () => { offs.forEach((o) => o()); clearInterval(iv); pubOff = null; };
   });

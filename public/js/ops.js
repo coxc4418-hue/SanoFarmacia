@@ -625,10 +625,10 @@ export async function publishShop({ force = false } = {}) {
   const d = shopDoc();
   const key = JSON.stringify({ ...d, updatedAt: '' });
   if (!force && key === lastPublished) return false;
-  lastPublished = key;
   const b = store.batch();
   b.set(store.shopRef(S.slug), d);
   await store.commit(b);
+  lastPublished = key;
   return true;
 }
 export function resetPublished() { lastPublished = ''; }
