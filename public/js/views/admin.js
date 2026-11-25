@@ -306,8 +306,8 @@ export function mount(el, { enter, logout }) {
   $('#a-theme').onclick = (e) => { const n = toggleTheme(); e.currentTarget.innerHTML = icon(n === 'dark' ? 'sun' : 'moon'); };
   $('#a-refresh').onclick = () => { stats = {}; load(); };
   $('#a-search').oninput = debounce((e) => { search = e.target.value; render(); }, 120);
-  $('#a-csv').onclick = () => download('sedes-sano-farmacia.csv', toCSV([['Sede', 'Usuario', 'Correo', 'Estado', 'Plan', 'Pagado hasta', 'Dueño', 'Teléfono', 'Cobrado hoy', 'Citas hoy', 'Creada'],
-    ...tenants.map((t) => [t.name, t.code, t.ownerEmail, status(t).label, t.plan || '', t.paidUntil ? fmtDate(new Date(ms(t.paidUntil)).toISOString()) : '', t.ownerName || '', t.ownerPhone || '', (stats[t.id]?.total || 0).toFixed(2), stats[t.id]?.open ?? '', fmtDate(t.createdAt)])]));
+  $('#a-csv').onclick = () => download('sedes-sano-farmacia.csv', toCSV([['Sede', 'Usuario', 'Correo', 'Estado', 'Plan', 'Pagado hasta', 'Dueño', 'Teléfono', 'Cobrado hoy', 'Ventas hoy', 'Creada'],
+    ...tenants.map((t) => [t.name, t.code, t.ownerEmail, status(t).label, t.plan || '', t.paidUntil ? fmtDate(new Date(ms(t.paidUntil)).toISOString()) : '', t.ownerName || '', t.ownerPhone || '', (stats[t.id]?.total || 0).toFixed(2), stats[t.id]?.count ?? 0, fmtDate(t.createdAt)])]));
   load();
   return () => { alive = false; };
 }

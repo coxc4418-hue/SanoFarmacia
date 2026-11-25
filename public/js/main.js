@@ -8,7 +8,7 @@ import { rateChip, startBcv } from './bcv.js';
 import { openCountryPicker, salesWa, SALES_PHONE_FMT } from './shared.js';
 import { isStandalone, platform, bindInstallButtons } from './install.js';
 
-export const VERSION = '1.0.0';
+export const VERSION = '1.0.1';
 
 const ROUTES = {
   inicio: { title: 'Inicio', icon: 'home', group: 'Farmacia', load: () => import('./views/dashboard.js') },
@@ -244,7 +244,7 @@ async function ensureCountry() {
 }
 /** Enlace del catálogo en línea: se crea solo la primera vez (nombre-de-la-farmacia-xxxx) */
 async function ensureShopSlug() {
-  if (store.settings.shop?.slug || session.isSuper) return;
+  if (store.settings.shop?.slug) return;
   const { slugify, genCode } = await import('./ops.js');
   const slug = `${slugify(store.businessName)}-${genCode(4).toLowerCase()}`;
   await store.saveSettings({ shop: { ...store.settings.shop, slug } }).catch(() => {});
@@ -259,11 +259,10 @@ async function afterEnter() {
 let pubOff = null;
 function startPublisher() {
   pubOff?.();
-  if (session.isSuper && !store.isDemo) return;
   import('./ops.js').then(({ publishShop, resetPublished }) => {
     resetPublished();
     const run = debounce(() => publishShop().catch((e) => console.warn('[catálogo]', e?.code || e)), 4000);
-    run();
+    publishShop().catch((e) => console.warn('[catálogo]', e?.code || e));
     const offs = [store.on('products', run), store.on('settings', run)];
     const iv = setInterval(run, 10 * 60000);
     pubOff = () => { offs.forEach((o) => o()); clearInterval(iv); pubOff = null; };

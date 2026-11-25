@@ -19,10 +19,10 @@ export function openCountryPicker({ force = false } = {}) {
     let cur = store.settings.currency || '';
     const list = Object.entries(COUNTRIES).sort((a, b) => a[1].name.localeCompare(b[1].name, 'es'));
     const m = openModal({
-      title: force ? '¿En qué país está tu farmacia?' : 'País y moneda', size: 'md', dismissible: !force,
+      title: force ? '¿En qué país está tu farmacia?' : 'País y moneda', size: 'md', dismissible: true,
       sub: 'Según el país, SanoFarmacia trabaja con su moneda, sus formas de pago y el código telefónico para WhatsApp.',
       body: `<div class="stack"><label class="search"><svg></svg><input data-q placeholder="Buscar país…" autocomplete="off"></label><div class="country-grid" data-l></div><div data-cur></div><div class="error-msg" data-err></div></div>`,
-      footer: `${force ? '' : '<button class="btn btn-secondary" data-close>Cancelar</button>'}<button class="btn btn-primary btn-lg" data-ok disabled>Continuar</button>`,
+      footer: `<button class="btn btn-secondary" data-close>Cancelar</button><button class="btn btn-primary btn-lg" data-ok disabled>Continuar</button>`,
       onClose: () => resolve(picked && store.settings.country === picked ? picked : null)
     });
     m.el.querySelector('.search svg').outerHTML = icon('search');

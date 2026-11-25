@@ -196,10 +196,13 @@ export function openModal({ title = '', sub = '', body = '', footer = '', size =
   const host = document.getElementById('modals');
   const wrap = document.createElement('div');
   wrap.className = 'modal-backdrop';
+  const closeBtn = dismissible ? `<button type="button" class="x-btn" data-close aria-label="Cerrar">${icon('x')}</button>` : '';
+  const header = title
+    ? `<div class="modal-header"><div><div class="modal-title">${title}</div>${sub ? `<div class="modal-sub">${sub}</div>` : ''}</div>${closeBtn}</div>`
+    : (dismissible ? `<div class="modal-header modal-header-bare">${closeBtn}</div>` : '');
   wrap.innerHTML = `
     <div class="modal ${size ? 'modal-' + size : ''}" role="dialog" aria-modal="true">
-      ${title ? `<div class="modal-header"><div><div class="modal-title">${title}</div>${sub ? `<div class="modal-sub">${sub}</div>` : ''}</div>
-        ${dismissible ? `<button type="button" class="x-btn" data-close aria-label="Cerrar">${icon('x')}</button>` : ''}</div>` : ''}
+      ${header}
       <div class="modal-body">${body}</div>
       ${footer ? `<div class="modal-footer">${footer}</div>` : ''}
     </div>`;
